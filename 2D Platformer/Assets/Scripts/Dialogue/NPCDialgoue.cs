@@ -32,6 +32,7 @@ public class NPCDialgoue : MonoBehaviour
             PlayerInteract Player = collision.GetComponent<PlayerInteract>();
             Player.hasExistNPC = true;
             Player.currentNPC = npc;
+            Player.GetDialogueByNPC(npc);
         }
                
     }

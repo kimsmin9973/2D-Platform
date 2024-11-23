@@ -16,13 +16,18 @@ public class PlayerInteract : MonoBehaviour
     [Space]
     public bool hasExistNPC = false;
     public NPCText currentNPC;
+    public float typeSpeed;
+
+    private Queue<String> lines = new Queue<string> ();
+    private string currentText;
+    public Animator animator;
 
     // Start is called before the first frame update
     void Start()
     {
         nameText = GameObject.Find("Canvas/Dialogue Background/NPC_Name").GetComponent<TextMeshProUGUI>();
         dialogueText = GameObject.Find("Canvas/Dialogue Background/Dialogue_Text").GetComponent<TextMeshProUGUI>();
-        dialogueObject.SetActive(false);
+        
     }
 
     // Update is called once per frame
@@ -42,29 +47,56 @@ public class PlayerInteract : MonoBehaviour
 
     private void EnableDialogue()
     {
-        // 대화창이 비활성화되어 있는 상태 -> 활성화
-        if (DialogueBackGround.activeInHierarchy)
-        {
-            DialogueBackGround.SetActive(false);
+        animator.Play("Show");
+        TypeText();
+    }
 
-        }
-        else
+    public void GetDialogueByNPC(NPCText npc)
+    {
+        foreach (var line in npc.dialogues)
         {
-            TypeText();
+            lines.Enqueue(line);
         }
     }
 
+
+
     private void TypeText()
     {
+        if (lines.Count == 0)
+        {
+            EndDialogue();
+            return;
+        }
+
         DialogueBackGround.SetActive(true);
         nameText.text = currentNPC.npcName;
-        dialogueText.text = currentNPC.dialogues[0];
+        currentText = lines.Dequeue();
+        
+        StopAllCoroutines();
+        StartCoroutine(TypeSentence(currentText));
+    }
 
-        //
+    IEnumerator TypeSentence(string currentLine)
+    {
+        dialogueText.text = "";
+        foreach (char letter in currentLine)
+        {
+            dialogueText.text +=letter;
+            yield return new WaitForSeconds(typeSpeed);
+        }
+
+    }
+
+    private void EndDialogue()
+    {
+        lines.Clear();
+        animator.Play("Hide");
     }
 
     public void CloseText()
     {
-        DialogueBackGround.SetActive(false);
+        lines.Clear();
+        animator.Play("Hide");
     }
 }
